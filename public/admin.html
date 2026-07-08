@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin - Dasbor Survei Dosen</title>
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  body { background-image: none; background: var(--cream-50); }
+  .app-shell { max-width: 1180px; margin: 0 auto; padding-top: 32px; }
+  .card { max-width: 100%; }
+
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    margin-bottom: 4px;
+  }
+  .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .filter-select { padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--radius); font-family: inherit; font-size: 13px; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin: 20px 0 28px;
+  }
+  .kpi-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--gold-500);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .kpi-value {
+    font-family: 'Lora', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--navy-900);
+    line-height: 1.1;
+  }
+  .kpi-label {
+    font-size: 11.5px;
+    color: var(--ink-500);
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; margin-bottom: 22px; }
+  .panel {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px 20px 12px;
+  }
+  .panel h3 {
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    margin: 0 0 4px;
+    color: var(--navy-900);
+  }
+  .panel .sub { font-size: 12px; color: var(--ink-500); margin-bottom: 12px; }
+  .chart-wrap { position: relative; height: 320px; }
+  .chart-wrap.short { height: 220px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  th { background: var(--cream-100); color: var(--navy-900); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  tr:hover td { background: #fbf9f4; }
+  tr.clickable { cursor: pointer; }
+  .score { font-weight: 700; color: var(--navy-800); }
+  .pill { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 600; }
+  .pill-sangatBaik { background: #e3f3e9; color: var(--ok); }
+  .pill-baik { background: #eef4fb; color: #2f5583; }
+  .pill-cukup { background: #fdf3de; color: #9a7415; }
+  .pill-perluPerhatian { background: #fdecec; color: #9a3030; }
+
+  .detail-panel { display: none; margin-top: 18px; }
+  .detail-panel.open { display: block; }
+  .saran-item { padding: 10px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+  .saran-meta { font-size: 11px; color: var(--ink-500); margin-bottom: 4px; }
+  .close-detail { float: right; }
+
+  @media (max-width: 900px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="card">
+    <div id="loginView" style="padding:32px;">
+      <div class="kop">Admin &middot; LPMI</div>
+      <h1 class="title" style="font-size:22px;">Masuk ke Dasbor Hasil Survei</h1>
+      <p class="desc">Masukkan kata sandi admin untuk melihat rekap &amp; visualisasi hasil survei kinerja dosen.</p>
+      <div class="field">
+        <label for="pw">Kata Sandi Admin</label>
+        <input type="password" id="pw" placeholder="Kata sandi..." />
+      </div>
+      <div id="err"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btnLogin">Masuk</button>
+      </div>
+    </div>
+
+    <div id="dashView" style="display:none; padding:28px 28px 36px;">
+      <div class="topbar">
+        <div>
+          <div class="kop">Admin &middot; LPMI</div>
+          <h1 class="title" style="font-size:22px; margin-bottom:0;">Dasbor Hasil Survei Kinerja Dosen</h1>
+        </div>
+        <div class="toolbar">
+          <select id="filterProdi" class="filter-select"></select>
+          <button class="btn btn-ghost" id="btnExportXlsx">⬇ Unduh Excel (.xlsx)</button>
+          <button class="btn btn-ghost" id="btnExportCsv">⬇ CSV Mentah</button>
+          <button class="btn btn-ghost" id="btnRefresh">Muat Ulang</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Rata-rata Skor per Dosen</h3>
+          <div class="sub">Skala 1–5, diurutkan dari tertinggi &middot; klik batang untuk detail</div>
+          <div class="chart-wrap"><canvas id="chartDosen"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Rata-rata per Dimensi (Institusi)</h3>
+          <div class="sub">Reliability · Responsiveness · Assurance · Empathy</div>
+          <div class="chart-wrap short"><canvas id="chartRadar"></canvas></div>
+          <h3 style="margin-top:18px;">Kategori Kepuasan</h3>
+          <div class="sub">Jumlah dosen per kategori rata-rata</div>
+          <div class="chart-wrap short"><canvas id="chartDoughnut"></canvas></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Distribusi Nilai Jawaban (Institusi)</h3>
+          <div class="sub">Sebaran seluruh jawaban 1–5 dari semua dosen</div>
+          <div class="chart-wrap short"><canvas id="chartDistribusi"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Rata-rata per Kelas</h3>
+          <div class="sub">Perbandingan skor rata-rata antar kelas</div>
+          <div class="chart-wrap short"><canvas id="chartKelas"></canvas></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Rekap per Dosen</h3>
+        <div class="sub">Klik baris untuk melihat detail per item pertanyaan &amp; saran mahasiswa</div>
+        <table id="tableDosen">
+          <thead>
+            <tr>
+              <th>Dosen</th><th>Prodi</th><th>Kelas</th><th>Jumlah Penilaian</th><th>Rata-rata</th><th>Kategori</th>
+            </tr>
+          </thead>
+          <tbody id="tableDosenBody"></tbody>
+        </table>
+
+        <div class="detail-panel" id="detailPanel">
+          <button class="btn btn-ghost close-detail" id="btnCloseDetail">Tutup ✕</button>
+          <h3 id="detailName" style="margin-top:6px;"></h3>
+          <div class="grid-2">
+            <div>
+              <div class="sub">Rata-rata per item pertanyaan (1–19)</div>
+              <div class="chart-wrap short"><canvas id="chartDetailItem"></canvas></div>
+            </div>
+            <div>
+              <div class="sub">Rata-rata per dimensi</div>
+              <div class="chart-wrap short"><canvas id="chartDetailRadar"></canvas></div>
+            </div>
+          </div>
+          <h3 style="margin-top:10px;">Saran &amp; Kritik Mahasiswa</h3>
+          <div id="detailSaran"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let TOKEN = '';
+let ANALYTICS = null;
+let CURRENT_FILTER_PRODI = '';
+const charts = {};
+const NAVY = '#16294a', GOLD = '#b8912f', OK='#3a7d5c', WARN='#9a3030', MID='#9a7415', BLUE='#2f5583';
+const kategoriLabel = { sangatBaik: 'Sangat Baik', baik: 'Baik', cukup: 'Cukup', perluPerhatian: 'Perlu Perhatian' };
+
+document.getElementById('btnLogin').onclick = login;
+document.getElementById('pw').addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
+
+async function login() {
+  const pw = document.getElementById('pw').value;
+  const res = await fetch('/api/admin/analytics?token=' + encodeURIComponent(pw));
+  if (!res.ok) {
+    document.getElementById('err').innerHTML = '<div class="error-banner">Kata sandi salah.</div>';
+    return;
+  }
+  TOKEN = pw;
+  ANALYTICS = await res.json();
+  document.getElementById('loginView').style.display = 'none';
+  document.getElementById('dashView').style.display = 'block';
+  setupFilterAndRender();
+}
+
+function setupFilterAndRender() {
+  const prodiList = [...new Set(ANALYTICS.dosen.map(d => d.prodi).filter(Boolean))];
+  const sel = document.getElementById('filterProdi');
+  sel.innerHTML = `<option value="">Semua Program Studi</option>` +
+    prodiList.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+  sel.onchange = () => { CURRENT_FILTER_PRODI = sel.value; renderAll(); };
+  renderAll();
+}
+
+function filteredDosen() {
+  if (!CURRENT_FILTER_PRODI) return ANALYTICS.dosen;
+  return ANALYTICS.dosen.filter(d => d.prodi.includes(CURRENT_FILTER_PRODI));
+}
+
+function renderAll() {
+  const dosenList = filteredDosen();
+  renderKPI(dosenList);
+  renderChartDosen(dosenList);
+  renderChartRadar();
+  renderChartDoughnut(dosenList);
+  renderChartDistribusi();
+  renderChartKelas();
+  renderTable(dosenList);
+  document.getElementById('detailPanel').classList.remove('open');
+}
+
+function renderKPI(dosenList) {
+  const totalResponden = ANALYTICS.overview.totalSubmission;
+  const rata = dosenList.length ? (dosenList.reduce((a,d)=>a+d.rataKeseluruhan,0)/dosenList.length).toFixed(2) : '0.00';
+  const kpis = [
+    { label: 'Total Pengisian Survei', value: totalResponden },
+    { label: 'Total Penilaian Dosen', value: ANALYTICS.overview.totalPenilaian },
+    { label: 'Dosen Ditampilkan', value: dosenList.length },
+    { label: 'Rata-rata Skor (1-5)', value: rata }
+  ];
+  document.getElementById('kpiGrid').innerHTML = kpis.map(k => `
+    <div class="kpi-card">
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-label">${k.label}</div>
+    </div>
+  `).join('');
+}
+
+function destroyChart(key) { if (charts[key]) { charts[key].destroy(); delete charts[key]; } }
+
+function colorForScore(v) {
+  if (v >= 4.5) return OK;
+  if (v >= 3.5) return BLUE;
+  if (v >= 2.5) return MID;
+  return WARN;
+}
+
+function renderChartDosen(dosenList) {
+  destroyChart('dosen');
+  const sorted = [...dosenList].sort((a,b) => b.rataKeseluruhan - a.rataKeseluruhan);
+  charts.dosen = new Chart(document.getElementById('chartDosen'), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(d => d.dosen.length > 26 ? d.dosen.slice(0,24)+'…' : d.dosen),
+      datasets: [{
+        data: sorted.map(d => d.rataKeseluruhan),
+        backgroundColor: sorted.map(d => colorForScore(d.rataKeseluruhan)),
+        borderRadius: 3,
+        maxBarThickness: 26
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { min: 0, max: 5, ticks: { stepSize: 1 } } },
+      plugins: { legend: { display: false } },
+      onClick: (evt, els) => { if (els.length) openDetail(sorted[els[0].index].dosen); }
+    }
+  });
+}
+
+function renderChartRadar() {
+  destroyChart('radar');
+  const dims = Object.values(ANALYTICS.overview.rataPerDimensiInstitusi);
+  charts.radar = new Chart(document.getElementById('chartRadar'), {
+    type: 'radar',
+    data: {
+      labels: dims.map(d => d.judul.split('(')[0].trim()),
+      datasets: [{
+        label: 'Rata-rata Institusi',
+        data: dims.map(d => d.rata),
+        backgroundColor: 'rgba(184,145,47,0.25)',
+        borderColor: GOLD,
+        pointBackgroundColor: NAVY
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function renderChartDoughnut(dosenList) {
+  destroyChart('doughnut');
+  const counts = { sangatBaik: 0, baik: 0, cukup: 0, perluPerhatian: 0 };
+  dosenList.forEach(d => counts[d.kategori]++);
+  charts.doughnut = new Chart(document.getElementById('chartDoughnut'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(counts).map(k => kategoriLabel[k]),
+      datasets: [{ data: Object.values(counts), backgroundColor: [OK, BLUE, MID, WARN] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
+  });
+}
+
+function renderChartDistribusi() {
+  destroyChart('distribusi');
+  const dist = ANALYTICS.overview.distribusiNilaiInstitusi;
+  charts.distribusi = new Chart(document.getElementById('chartDistribusi'), {
+    type: 'bar',
+    data: {
+      labels: ['1 - Tidak Baik', '2', '3', '4', '5 - Sangat Baik'],
+      datasets: [{ data: [dist[1]||0, dist[2]||0, dist[3]||0, dist[4]||0, dist[5]||0],
+        backgroundColor: [WARN, '#c9853a', MID, '#6f9e63', OK], borderRadius: 3 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+}
+
+function renderChartKelas() {
+  destroyChart('kelas');
+  const perKelas = ANALYTICS.overview.perKelas;
+  charts.kelas = new Chart(document.getElementById('chartKelas'), {
+    type: 'bar',
+    data: {
+      labels: perKelas.map(k => k.kelas),
+      datasets: [{ data: perKelas.map(k => k.rataRata), backgroundColor: perKelas.map(k => colorForScore(k.rataRata)), borderRadius: 3 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { y: { min: 0, max: 5, ticks: { stepSize: 1 } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function renderTable(dosenList) {
+  const sorted = [...dosenList].sort((a,b) => b.rataKeseluruhan - a.rataKeseluruhan);
+  document.getElementById('tableDosenBody').innerHTML = sorted.map(d => `
+    <tr class="clickable" data-dosen="${encodeURIComponent(d.dosen)}">
+      <td>${escapeHtml(d.dosen)}</td>
+      <td>${escapeHtml(d.prodi)}</td>
+      <td>${escapeHtml(d.kelas)}</td>
+      <td>${d.jumlahResponden}</td>
+      <td class="score">${d.rataKeseluruhan}</td>
+      <td><span class="pill pill-${d.kategori}">${kategoriLabel[d.kategori]}</span></td>
+    </tr>
+  `).join('');
+  document.querySelectorAll('#tableDosenBody tr').forEach(tr => {
+    tr.onclick = () => openDetail(decodeURIComponent(tr.getAttribute('data-dosen')));
+  });
+}
+
+function openDetail(dosenName) {
+  const d = ANALYTICS.dosen.find(x => x.dosen === dosenName);
+  if (!d) return;
+
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('detailName').textContent = d.dosen;
+
+  destroyChart('detailItem');
+  charts.detailItem = new Chart(document.getElementById('chartDetailItem'), {
+    type: 'bar',
+    data: {
+      labels: d.rataPerItem.map((_, i) => 'Q' + (i+1)),
+      datasets: [{ data: d.rataPerItem, backgroundColor: d.rataPerItem.map(colorForScore), borderRadius: 3 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { y: { min: 0, max: 5, ticks: { stepSize: 1 } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  destroyChart('detailRadar');
+  const dims = Object.values(d.rataPerDimensi);
+  charts.detailRadar = new Chart(document.getElementById('chartDetailRadar'), {
+    type: 'radar',
+    data: {
+      labels: dims.map(x => x.judul.split('(')[0].trim()),
+      datasets: [{ data: dims.map(x => x.rata), backgroundColor: 'rgba(47,85,131,0.25)', borderColor: BLUE, pointBackgroundColor: NAVY }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  const saranEl = document.getElementById('detailSaran');
+  saranEl.innerHTML = d.saranList.length
+    ? d.saranList.map(s => `
+        <div class="saran-item">
+          <div class="saran-meta">${escapeHtml(s.kelas)} &middot; ${new Date(s.waktu).toLocaleString('id-ID')}</div>
+          ${escapeHtml(s.teks)}
+        </div>
+      `).join('')
+    : '<div class="sub">Belum ada saran/kritik untuk dosen ini.</div>';
+
+  document.getElementById('detailPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+document.getElementById('btnCloseDetail').onclick = () => document.getElementById('detailPanel').classList.remove('open');
+
+document.getElementById('btnExportXlsx').onclick = () => {
+  window.location.href = '/api/admin/export.xlsx?token=' + encodeURIComponent(TOKEN);
+};
+document.getElementById('btnExportCsv').onclick = () => {
+  window.location.href = '/api/admin/export.csv?token=' + encodeURIComponent(TOKEN);
+};
+document.getElementById('btnRefresh').onclick = async () => {
+  const res = await fetch('/api/admin/analytics?token=' + encodeURIComponent(TOKEN));
+  ANALYTICS = await res.json();
+  setupFilterAndRender();
+};
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, (m) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[m]));
+}
+</script>
+</body>
+</html>

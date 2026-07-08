@@ -1,0 +1,16 @@
+{
+  "name": "survei-dosen-instbunas",
+  "version": "1.0.0",
+  "description": "Aplikasi survei kinerja dosen INSTBUNAS (mirip Google Form, berbasis kelas & jadwal dosen)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "express": "^4.19.2"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "dimensions": [
+    {
+      "kode": "RELIABILITY",
+      "judul": "KEANDALAN (RELIABILITY)",
+      "deskripsi": "Kemampuan dosen dalam memberikan pelayanan",
+      "items": [
+        { "no": 1, "teks": "Menyampaikan rencana pembelajaran satu semester di awal perkuliahan" },
+        { "no": 2, "teks": "Menggunakan metode pengajaran yang bervariasi (offline misal: ceramah, diskusi, tugas, praktek, dll. Media online misal: google meet/zoom/google classroom/WA group)" },
+        { "no": 3, "teks": "Menyampaikan materi dengan jelas dan mudah dipahami" },
+        { "no": 4, "teks": "Memberikan kesempatan untuk menyampaikan pendapat" },
+        { "no": 5, "teks": "Memberikan contoh dalam kehidupan sehari-hari (aplikatif)" }
+      ]
+    },
+    {
+      "kode": "RESPONSIVENESS",
+      "judul": "DAYA TANGGAP (RESPONSIVENESS)",
+      "deskripsi": "Kemauan dosen dalam membantu mahasiswa dan memberikan jasa dengan cepat",
+      "items": [
+        { "no": 6, "teks": "Menggunakan media dan alat bantu pembelajaran dalam menyampaikan materi (misal: PPT, media gambar, papan tulis, proyektor)" },
+        { "no": 7, "teks": "Memiliki rasa percaya diri akan kemampuan mengajar" },
+        { "no": 8, "teks": "Memulai dan mengakhiri perkuliahan dengan tepat waktu" },
+        { "no": 9, "teks": "Bertindak dewasa, arif dan berwibawa" },
+        { "no": 10, "teks": "Melaksanakan kegiatan pembelajaran dengan semangat dan tanggung jawab (secara tatap muka atau online)" }
+      ]
+    },
+    {
+      "kode": "ASSURANCE",
+      "judul": "KEPASTIAN (ASSURANCE)",
+      "deskripsi": "Kemampuan dosen untuk memberi keyakinan kepada mahasiswa bahwa pelayanan yang diberikan telah sesuai dengan ketentuan",
+      "items": [
+        { "no": 11, "teks": "Mampu menerima kritik, saran dan pendapat dari mahasiswa" },
+        { "no": 12, "teks": "Mudah bergaul dengan segenap civitas (termasuk dengan mahasiswa)" },
+        { "no": 13, "teks": "Toleransi terhadap keberagaman mahasiswa" },
+        { "no": 14, "teks": "Menguasai materi mata kuliah yang diampu" },
+        { "no": 15, "teks": "Mampu berkomunikasi dan menyampaikan materi pada saat perkuliahan, menciptakan suasana perkuliahan yang menarik dan kondusif" }
+      ]
+    },
+    {
+      "kode": "EMPATHY",
+      "judul": "EMPATI (EMPATHY)",
+      "deskripsi": "Kesediaan/kepedulian dosen untuk memberi perhatian kepada mahasiswa",
+      "items": [
+        { "no": 16, "teks": "Menyampaikan kompetensi dasar yang akan dipelajari dan tujuan pembelajaran sebelum memulai materi baru" },
+        { "no": 17, "teks": "Memberikan kesempatan tanya jawab pada saat perkuliahan berlangsung" },
+        { "no": 18, "teks": "Menyampaikan materi sesuai dengan rencana pembelajaran semester" },
+        { "no": 19, "teks": "Menginformasikan materi pertemuan yang akan datang" }
+      ]
+    }
+  ],
+  "skalaMin": 1,
+  "skalaMax": 5,
+  "labelMin": "Tidak Baik",
+  "labelMax": "Sangat Baik",
+  "pertanyaanSaran": "Mohon berikan saran dan kritik yang membangun demi peningkatan kualitas dosen!"
+}

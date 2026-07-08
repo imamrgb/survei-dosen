@@ -1,0 +1,177 @@
+[
+  {
+    "kode": "MN 1 A",
+    "label": "MN 25 Reg Pagi",
+    "dosen": [
+      "Iman Julisman, S.E., M.M.",
+      "Idah Wahidah, S.Ag., M.Si.",
+      "Yelsha Dwi Pasca, S.Pd., M.Pd., M.M.",
+      "Wawan Yuswanto, S.E., M.M.",
+      "Dr. H. Sudibyo BO, S.Sos, S.E., M.M.",
+      "Fatonah, S.Ag. M.Pd.",
+      "Ii Muhamad Misbah, S.Pd.I., S.E., M.M.",
+      "Dr. Drs. H. Ahmad Kamaludin, M.M."
+    ],
+    "prodi": "Manajemen"
+  },
+  {
+    "kode": "MN 1 B",
+    "label": "MN 25 Reg Sore",
+    "dosen": [
+      "Yelsha Dwi Pasca, S.Pd., M.Pd., M.M.",
+      "Wawan Yuswanto, S.E., M.M.",
+      "H. Bayu Jaya, Ir., M.Si.",
+      "Iman Julisman, S.E., M.M.",
+      "Ade Ina Rimayanti, S.Pd. M.Pd.",
+      "Tia Aprilia Susnita, S.E., M.M.",
+      "Ii Muhamad Misbah, S.Pd.I., S.E., M.M.",
+      "Rahmatika Siregar, S.M., M.M."
+    ],
+    "prodi": "Manajemen"
+  },
+  {
+    "kode": "MN 2 A",
+    "label": "MN 24 Reg Pagi",
+    "dosen": [
+      "Vina Andita Pratiwi, S.Pd., M.M.",
+      "Ade Sobariah Hasanah, S.Pd., M.Pd.",
+      "Yelsha Dwi Pasca, S.Pd., M.Pd., M.M.",
+      "Gita Kartika Sari, S.IP, M.M.",
+      "Dr. Drs. H. Ahmad Kamaludin, M.M.",
+      "Tia Aprilia Susnita, S.E., M.M."
+    ],
+    "prodi": "Manajemen"
+  },
+  {
+    "kode": "MN 2 B",
+    "label": "MN 24 Reg Sore",
+    "dosen": [
+      "Ade Sobariah Hasanah, S.Pd., M.Pd.",
+      "H. Maman Kusman, S.E., M.M.",
+      "Dr. Drs. H. Ahmad Kamaludin, M.M.",
+      "Hj. Tuti Yuliawati, S.E., M.M.",
+      "Didi Ahdi, S.Sos., M.AP.",
+      "Vina Andita Pratiwi, S.Pd., M.M.",
+      "Gita Kartika Sari, S.IP, M.M."
+    ],
+    "prodi": "Manajemen"
+  },
+  {
+    "kode": "MN 3 A",
+    "label": "MN 23 Reg Pagi",
+    "dosen": [
+      "Dr. Emi Amelia, S.Pd., M.M.",
+      "Ade Sobariah Hasanah, S.Pd., M.Pd.",
+      "Dini Tiara Tajriani, S.E.Sy., M.Ak.",
+      "Dani Ahmad Hamdani, S.E., M.M.",
+      "Dr. H. Sudibyo BO, S.Sos, S.E., M.M.",
+      "Eli Dahlia, S.Pd.I., M.Pd.I."
+    ],
+    "prodi": "Manajemen"
+  },
+  {
+    "kode": "MN 3 B",
+    "label": "MN 23 Reg Sore",
+    "dosen": [
+      "Eli Dahlia, S.Pd.I., M.Pd.I.",
+      "Tedi Hadiat Kusmayadi, S.Pt., M.Si.",
+      "Dini Tiara Tajriani, S.E.Sy., M.Ak.",
+      "Dani Ahmad Hamdani, S.E., M.M.",
+      "Dr. Emi Amelia, S.Pd., M.M.",
+      "Dr. H. Sudibyo BO, S.Sos, S.E., M.M.",
+      "H. Maman Kusman, S.E., M.M."
+    ],
+    "prodi": "Manajemen"
+  },
+  {
+    "kode": "BD 1 A",
+    "label": "BD 25 Reg Pagi",
+    "dosen": [
+      "Hasanudin, S.Pd., M.Pd.",
+      "Sa'diyah Dwiyani Lestari, S.E., M.Pd.",
+      "Abrar Farhan Sudibyo, S.Kel., S.M.,M.M.",
+      "Dycka Handa Puspawan, S.E., M.M.",
+      "Asep Gugun Barlian, S.E., M.Pd., M.M.",
+      "Iwan Hasan Asyari, S.Pd., M.M."
+    ],
+    "prodi": "Bisnis Digital"
+  },
+  {
+    "kode": "BD 2 A",
+    "label": "BD 24 Reg Pagi",
+    "dosen": [
+      "Anto Herianto, S.E., M.M.",
+      "Abrar Farhan Sudibyo, S.Kel., S.M.,M.M.",
+      "Dycka Handa Puspawan, S.E., M.M.",
+      "Sa'diyah Dwiyani Lestari, S.E., M.Pd.",
+      "Wiwin Kusniawati, S.E., M.Pd.",
+      "Tabiin, S.E., S.Kom., M.M.",
+      "Asep Gugun Barlian, S.E., M.Pd., M.M.",
+      "Yaya Sunjaya, S.Pd., M.M."
+    ],
+    "prodi": "Bisnis Digital"
+  },
+  {
+    "kode": "BD 3 A",
+    "label": "BD 23 Reg Pagi",
+    "dosen": [
+      "Dhike Noordestiasari Hanurajasa, S.Par., M.M.",
+      "Rahmatika Siregar, S.M., M.M.",
+      "Haryanto, S.Kom., M.Kom.",
+      "Lubna Laelatul Farhan, S.H., M.H.",
+      "Burhanudin Rabani, S.H., M.M.",
+      "Hasanudin, S.Pd., M.Pd.",
+      "Iyustandi, S.E., M.M."
+    ],
+    "prodi": "Bisnis Digital"
+  },
+  {
+    "kode": "TI 1 A",
+    "label": "TI 25 Reg Pagi",
+    "dosen": [
+      "Hasanudin, S.Pd., M.Pd.",
+      "Ida Pujiani, S.E., M.Kom.",
+      "Sa'diyah Dwiyani Lestari, S.E., M.Pd.",
+      "Dhike Noordestiasari Hanurajasa, S.Par., M.M.",
+      "Hilmi Luthfiansyah, S.Kom., M.M.",
+      "Asep Gugun Barlian, S.E., M.Pd., M.M."
+    ],
+    "prodi": "Teknologi Informasi"
+  },
+  {
+    "kode": "TI 2 A",
+    "label": "TI 24 Reg Pagi",
+    "dosen": [
+      "Hasanudin, S.Pd., M.Pd.",
+      "Iim Ibrahim, S.Sos., S.E., M.M.",
+      "Tabiin, S.E., S.Kom., M.M.",
+      "Prafangasta Geo Ginantaka, S.Kom., M.Kom.",
+      "Ir. Eka Wahyu Pujiharto, S.T., M.Kom.",
+      "Hilmi Luthfiansyah, S.Kom., M.M."
+    ],
+    "prodi": "Teknologi Informasi"
+  },
+  {
+    "kode": "TI 3 A",
+    "label": "TI 23 Reg Pagi",
+    "dosen": [
+      "Haryanto, S.Kom., M.Kom.",
+      "Lubna Laelatul Farhan, S.H., M.H.",
+      "Ir. Eka Wahyu Pujiharto, S.T., M.Kom.",
+      "Tabiin, S.E., S.Kom., M.M.",
+      "Prafangasta Geo Ginantaka, S.Kom., M.Kom."
+    ],
+    "prodi": "Teknologi Informasi"
+  },
+  {
+    "kode": "MN/BD 26",
+    "label": "MN/BD 26 Reg Sore",
+    "dosen": [
+      "Dr. H. Sudibyo BO, S.Sos, S.E., M.M.",
+      "Ii Muhamad Misbah, S.Pd.I., S.E., M.M.",
+      "Fatonah, S.Ag. M.Pd.",
+      "Ade Ina Rimayanti, S.Pd., M.Pd."
+    ],
+    "prodi": "Gabungan (Manajemen & Bisnis Digital)"
+  }
+]
