@@ -1,7 +1,7 @@
 [
   {
     "kode": "MN 1 A",
-    "label": "MN 25 Reg Pagi",
+    "label": "MN 1 A (MN 25 Reg Pagi)",
     "dosen": [
       "Iman Julisman, S.E., M.M.",
       "Idah Wahidah, S.Ag., M.Si.",
@@ -16,7 +16,7 @@
   },
   {
     "kode": "MN 1 B",
-    "label": "MN 25 Reg Sore",
+    "label": "MN 1 B (MN 25 Reg Sore)",
     "dosen": [
       "Yelsha Dwi Pasca, S.Pd., M.Pd., M.M.",
       "Wawan Yuswanto, S.E., M.M.",
@@ -31,7 +31,7 @@
   },
   {
     "kode": "MN 2 A",
-    "label": "MN 24 Reg Pagi",
+    "label": "MN 2 A (MN 24 Reg Pagi)",
     "dosen": [
       "Vina Andita Pratiwi, S.Pd., M.M.",
       "Ade Sobariah Hasanah, S.Pd., M.Pd.",
@@ -44,7 +44,7 @@
   },
   {
     "kode": "MN 2 B",
-    "label": "MN 24 Reg Sore",
+    "label": "MN 2 B (MN 24 Reg Sore)",
     "dosen": [
       "Ade Sobariah Hasanah, S.Pd., M.Pd.",
       "H. Maman Kusman, S.E., M.M.",
@@ -58,7 +58,7 @@
   },
   {
     "kode": "MN 3 A",
-    "label": "MN 23 Reg Pagi",
+    "label": "MN 3 A (MN 23 Reg Pagi)",
     "dosen": [
       "Dr. Emi Amelia, S.Pd., M.M.",
       "Ade Sobariah Hasanah, S.Pd., M.Pd.",
@@ -71,7 +71,7 @@
   },
   {
     "kode": "MN 3 B",
-    "label": "MN 23 Reg Sore",
+    "label": "MN 3 B (MN 23 Reg Sore)",
     "dosen": [
       "Eli Dahlia, S.Pd.I., M.Pd.I.",
       "Tedi Hadiat Kusmayadi, S.Pt., M.Si.",
@@ -85,7 +85,7 @@
   },
   {
     "kode": "BD 1 A",
-    "label": "BD 25 Reg Pagi",
+    "label": "BD 1 A (BD 25 Reg Pagi)",
     "dosen": [
       "Hasanudin, S.Pd., M.Pd.",
       "Sa'diyah Dwiyani Lestari, S.E., M.Pd.",
@@ -98,7 +98,7 @@
   },
   {
     "kode": "BD 2 A",
-    "label": "BD 24 Reg Pagi",
+    "label": "BD 2 A (BD 24 Reg Pagi)",
     "dosen": [
       "Anto Herianto, S.E., M.M.",
       "Abrar Farhan Sudibyo, S.Kel., S.M.,M.M.",
@@ -113,7 +113,7 @@
   },
   {
     "kode": "BD 3 A",
-    "label": "BD 23 Reg Pagi",
+    "label": "BD 3 A (BD 23 Reg Pagi)",
     "dosen": [
       "Dhike Noordestiasari Hanurajasa, S.Par., M.M.",
       "Rahmatika Siregar, S.M., M.M.",
@@ -127,7 +127,7 @@
   },
   {
     "kode": "TI 1 A",
-    "label": "TI 25 Reg Pagi",
+    "label": "TI 1 A (TI 25 Reg Pagi)",
     "dosen": [
       "Hasanudin, S.Pd., M.Pd.",
       "Ida Pujiani, S.E., M.Kom.",
@@ -140,7 +140,7 @@
   },
   {
     "kode": "TI 2 A",
-    "label": "TI 24 Reg Pagi",
+    "label": "TI 2 A (TI 24 Reg Pagi)",
     "dosen": [
       "Hasanudin, S.Pd., M.Pd.",
       "Iim Ibrahim, S.Sos., S.E., M.M.",
@@ -153,7 +153,7 @@
   },
   {
     "kode": "TI 3 A",
-    "label": "TI 23 Reg Pagi",
+    "label": "TI 3 A (TI 23 Reg Pagi)",
     "dosen": [
       "Haryanto, S.Kom., M.Kom.",
       "Lubna Laelatul Farhan, S.H., M.H.",
