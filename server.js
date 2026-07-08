@@ -24,10 +24,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ---------- Simple write mutex (mencegah race condition saat banyak submit bersamaan) ----------
 let writeLock = Promise.resolve();
 function queueWrite(task) {
-  writeLock = writeLock.then(task).catch((err) => {
-    console.error('Write error:', err);
-  });
-  return writeLock;
+  // 'result' is this task's own outcome (so the caller can catch its specific error).
+  const result = writeLock.then(task);
+  // The shared chain always continues (even after a failure) so one bad write
+  // doesn't permanently block future writes.
+  writeLock = result.catch(() => {});
+  return result;
 }
 
 // ---------- Helper ----------
@@ -63,25 +65,32 @@ app.get('/api/questions', (req, res) => {
   }
 });
 
-// Terima submit hasil survei
-app.post('/api/submit', (req, res) => {
-  const { prodi, kelas, penilaian } = req.body || {};
-
+// Validasi payload prodi/kelas/penilaian (dipakai submit publik & edit admin)
+function validateSubmission(body) {
+  const { prodi, kelas, penilaian } = body || {};
   if (!prodi || !kelas || !Array.isArray(penilaian) || penilaian.length === 0) {
-    return res.status(400).json({ error: 'Data tidak lengkap' });
+    return 'Data tidak lengkap';
   }
-
-  // Validasi dasar tiap entri penilaian dosen
   for (const p of penilaian) {
     if (!p.dosen || !Array.isArray(p.jawaban) || p.jawaban.length !== 19) {
-      return res.status(400).json({ error: 'Data penilaian dosen tidak valid' });
+      return 'Data penilaian dosen tidak valid';
     }
     for (const j of p.jawaban) {
       if (typeof j !== 'number' || j < 1 || j > 5) {
-        return res.status(400).json({ error: 'Nilai jawaban harus 1-5' });
+        return 'Nilai jawaban harus 1-5';
       }
     }
   }
+  return null;
+}
+
+// Terima submit hasil survei
+app.post('/api/submit', (req, res) => {
+  const errMsg = validateSubmission(req.body);
+  if (errMsg) {
+    return res.status(400).json({ error: errMsg });
+  }
+  const { prodi, kelas, penilaian } = req.body;
 
   const entry = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
@@ -95,7 +104,7 @@ app.post('/api/submit', (req, res) => {
     const current = readJSON(RESPONSES_FILE);
     current.push(entry);
     fs.writeFileSync(RESPONSES_FILE, JSON.stringify(current, null, 2), 'utf-8');
-  });
+  }).catch((err) => console.error('Write error:', err));
 
   res.json({ ok: true, message: 'Terima kasih, survei berhasil dikirim.' });
 });
@@ -109,6 +118,86 @@ app.get('/api/admin/responses', requireAdmin, (req, res) => {
   } catch (e) {
     res.status(500).json({ error: 'Gagal memuat data' });
   }
+});
+
+// Hapus satu pengisian survei (satu mahasiswa) sepenuhnya
+app.delete('/api/admin/responses/:id', requireAdmin, (req, res) => {
+  const { id } = req.params;
+  queueWrite(() => {
+    const current = readJSON(RESPONSES_FILE);
+    const next = current.filter((r) => r.id !== id);
+    if (next.length === current.length) {
+      throw Object.assign(new Error('not found'), { notFound: true });
+    }
+    fs.writeFileSync(RESPONSES_FILE, JSON.stringify(next, null, 2), 'utf-8');
+  })
+    .then(() => res.json({ ok: true }))
+    .catch((e) => {
+      if (e && e.notFound) return res.status(404).json({ error: 'Data tidak ditemukan' });
+      res.status(500).json({ error: 'Gagal menghapus data' });
+    });
+});
+
+// Edit satu pengisian survei (prodi/kelas/penilaian) — mis. perbaikan salah pilih kelas/dosen atau nilai
+app.put('/api/admin/responses/:id', requireAdmin, (req, res) => {
+  const { id } = req.params;
+  const errMsg = validateSubmission(req.body);
+  if (errMsg) {
+    return res.status(400).json({ error: errMsg });
+  }
+  const { prodi, kelas, penilaian } = req.body;
+
+  queueWrite(() => {
+    const current = readJSON(RESPONSES_FILE);
+    const idx = current.findIndex((r) => r.id === id);
+    if (idx === -1) {
+      throw Object.assign(new Error('not found'), { notFound: true });
+    }
+    current[idx] = {
+      ...current[idx],
+      prodi,
+      kelas,
+      penilaian,
+      editedAt: new Date().toISOString()
+    };
+    fs.writeFileSync(RESPONSES_FILE, JSON.stringify(current, null, 2), 'utf-8');
+  })
+    .then(() => res.json({ ok: true }))
+    .catch((e) => {
+      if (e && e.notFound) return res.status(404).json({ error: 'Data tidak ditemukan' });
+      res.status(500).json({ error: 'Gagal menyimpan perubahan' });
+    });
+});
+
+// Hapus satu penilaian dosen saja dari sebuah pengisian (tanpa menghapus seluruh pengisian)
+app.delete('/api/admin/responses/:id/penilaian/:index', requireAdmin, (req, res) => {
+  const { id } = req.params;
+  const index = Number(req.params.index);
+
+  queueWrite(() => {
+    const current = readJSON(RESPONSES_FILE);
+    const idx = current.findIndex((r) => r.id === id);
+    if (idx === -1) {
+      throw Object.assign(new Error('not found'), { notFound: true });
+    }
+    const entry = current[idx];
+    if (!Number.isInteger(index) || index < 0 || index >= entry.penilaian.length) {
+      throw Object.assign(new Error('bad index'), { badIndex: true });
+    }
+    entry.penilaian.splice(index, 1);
+    entry.editedAt = new Date().toISOString();
+    // Jika tidak ada lagi penilaian dosen tersisa, hapus seluruh pengisian
+    const next = entry.penilaian.length === 0
+      ? current.filter((r) => r.id !== id)
+      : current;
+    fs.writeFileSync(RESPONSES_FILE, JSON.stringify(next, null, 2), 'utf-8');
+  })
+    .then(() => res.json({ ok: true }))
+    .catch((e) => {
+      if (e && e.notFound) return res.status(404).json({ error: 'Data tidak ditemukan' });
+      if (e && e.badIndex) return res.status(400).json({ error: 'Index penilaian tidak valid' });
+      res.status(500).json({ error: 'Gagal menghapus penilaian dosen' });
+    });
 });
 
 // Ringkasan rata-rata per dosen (dipertahankan untuk kompatibilitas mundur)
