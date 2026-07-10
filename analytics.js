@@ -93,6 +93,36 @@ function buildAnalytics() {
     };
   }).sort((a, b) => b.rataKeseluruhan - a.rataKeseluruhan);
 
+  // ---- Skor tertimbang (mengatasi bias sampel kecil) ----
+  // Dosen dengan sedikit responden (mis. 1-2 orang) bisa punya rata-rata sempurna
+  // hanya karena kebetulan, sehingga tidak adil jika langsung mengalahkan dosen
+  // dengan puluhan responden. Kita "tarik" skor ke rata-rata institusi (C) secara
+  // proporsional terhadap kekurangan datanya, memakai formula weighted rating
+  // (mirip IMDB): WR = (v/(v+m))*R + (m/(v+m))*C
+  //   R = rata-rata dosen ybs, v = jumlah responden dosen ybs
+  //   m = jumlah responden "normal"/tipikal (median semua dosen)
+  //   C = rata-rata seluruh dosen
+  const totalDosenAwal = dosenResult.length;
+  const semuaRata = dosenResult.map((d) => d.rataKeseluruhan);
+  const semuaN = dosenResult.map((d) => d.jumlahResponden).sort((a, b) => a - b);
+  const C = totalDosenAwal
+    ? +(semuaRata.reduce((a, b) => a + b, 0) / totalDosenAwal).toFixed(4)
+    : 0;
+  const mid = Math.floor(semuaN.length / 2);
+  const m = semuaN.length
+    ? (semuaN.length % 2 ? semuaN[mid] : (semuaN[mid - 1] + semuaN[mid]) / 2)
+    : 0;
+
+  dosenResult.forEach((d) => {
+    const v = d.jumlahResponden;
+    d.skorTertimbang = m
+      ? +(((v / (v + m)) * d.rataKeseluruhan) + ((m / (v + m)) * C)).toFixed(2)
+      : d.rataKeseluruhan;
+    d.dataTerbatas = v < m; // penanda: jumlah responden di bawah "normal"
+  });
+
+  dosenResult.sort((a, b) => b.skorTertimbang - a.skorTertimbang);
+
   // ---- Ringkasan tingkat institusi ----
   const totalPenilaian = dosenResult.reduce((a, d) => a + d.jumlahResponden, 0);
   const totalSubmission = responses.length;
@@ -146,7 +176,8 @@ function buildAnalytics() {
       rataPerDimensiInstitusi,
       distribusiKepuasan,
       distribusiNilaiInstitusi,
-      perKelas
+      perKelas,
+      skorTertimbangInfo: { m, c: C }
     },
     dosen: dosenResult,
     dimensiInfo: dims.map((d) => ({ kode: d.kode, judul: d.judul }))
