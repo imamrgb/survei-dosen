@@ -108,7 +108,7 @@ async function buildWorkbook(analytics, questions, responses) {
 
   const dimKodes = analytics.dimensiInfo.map((d) => d.kode);
   const header = ['Nama Dosen', 'Program Studi', 'Kelas', 'Jumlah Responden',
-    ...analytics.dimensiInfo.map((d) => d.judul), 'Rata-rata Keseluruhan', 'Kategori'];
+    ...analytics.dimensiInfo.map((d) => d.judul), 'Rata-rata Keseluruhan', 'Skor Tertimbang', 'Kategori'];
   const headerRow = wsDosen.addRow(header);
   styleHeaderRow(headerRow);
 
@@ -121,18 +121,21 @@ async function buildWorkbook(analytics, questions, responses) {
       d.jumlahResponden,
       ...dimKodes.map((k) => d.rataPerDimensi[k].rata),
       d.rataKeseluruhan,
+      d.skorTertimbang,
       kategoriLabel[d.kategori]
     ]);
   });
   const dosenEndRow = dosenStartRow + analytics.dosen.length - 1;
   if (dosenEndRow >= dosenStartRow) {
     const overallCol = String.fromCharCode('A'.charCodeAt(0) + 4 + dimKodes.length);
+    const weightedCol = String.fromCharCode('A'.charCodeAt(0) + 5 + dimKodes.length);
     addColorScale(wsDosen, `${overallCol}${dosenStartRow}:${overallCol}${dosenEndRow}`);
+    addColorScale(wsDosen, `${weightedCol}${dosenStartRow}:${weightedCol}${dosenEndRow}`);
   }
   wsDosen.columns = [
     { width: 32 }, { width: 20 }, { width: 16 }, { width: 16 },
     ...dimKodes.map(() => ({ width: 16 })),
-    { width: 18 }, { width: 18 }
+    { width: 18 }, { width: 18 }, { width: 18 }
   ];
   wsDosen.autoFilter = { from: 'A1', to: `${String.fromCharCode(64 + header.length)}1` };
 
