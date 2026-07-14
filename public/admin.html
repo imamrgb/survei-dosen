@@ -300,6 +300,15 @@ const RANK_METRIC_LABEL = {
   skorTertimbang: 'Skor Tertimbang (IMDB-style)',
   rataKeseluruhan: 'Rata-rata Mentah'
 };
+const RANK_METRIC_RAW_FIELD = {
+  skorNetral: 'skorNetralRaw',
+  skorTertimbang: 'skorTertimbangRaw',
+  rataKeseluruhan: 'rataKeseluruhanRaw'
+};
+function sortByRankMetric(list) {
+  const rawField = RANK_METRIC_RAW_FIELD[CURRENT_RANK_METRIC] || CURRENT_RANK_METRIC;
+  return [...list].sort((a, b) => b[rawField] - a[rawField]);
+}
 const charts = {};
 const NAVY = '#16294a', GOLD = '#b8912f', OK='#3a7d5c', WARN='#9a3030', MID='#9a7415', BLUE='#2f5583';
 const kategoriLabel = { sangatBaik: 'Sangat Baik', baik: 'Baik', cukup: 'Cukup', perluPerhatian: 'Perlu Perhatian' };
@@ -562,7 +571,7 @@ function colorForScore(v) {
 
 function renderChartDosen(dosenList) {
   destroyChart('dosen');
-  const sorted = [...dosenList].sort((a,b) => b[CURRENT_RANK_METRIC] - a[CURRENT_RANK_METRIC]);
+  const sorted = sortByRankMetric(dosenList);
   charts.dosen = new Chart(document.getElementById('chartDosen'), {
     type: 'bar',
     data: {
@@ -653,7 +662,7 @@ function renderChartKelas() {
 }
 
 function renderTable(dosenList) {
-  const sorted = [...dosenList].sort((a,b) => b[CURRENT_RANK_METRIC] - a[CURRENT_RANK_METRIC]);
+  const sorted = sortByRankMetric(dosenList);
   document.getElementById('tableDosenBody').innerHTML = sorted.map(d => `
     <tr class="clickable" data-dosen="${encodeURIComponent(d.dosen)}">
       <td>${escapeHtml(d.dosen)}</td>
