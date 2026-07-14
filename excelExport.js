@@ -108,7 +108,7 @@ async function buildWorkbook(analytics, questions, responses) {
 
   const dimKodes = analytics.dimensiInfo.map((d) => d.kode);
   const header = ['Nama Dosen', 'Program Studi', 'Kelas', 'Jumlah Responden',
-    ...analytics.dimensiInfo.map((d) => d.judul), 'Rata-rata Keseluruhan', 'Skor Tertimbang', 'Kategori'];
+    ...analytics.dimensiInfo.map((d) => d.judul), 'Rata-rata Keseluruhan', 'Skor Tertimbang', 'Skor Netral', 'Kategori'];
   const headerRow = wsDosen.addRow(header);
   styleHeaderRow(headerRow);
 
@@ -122,6 +122,7 @@ async function buildWorkbook(analytics, questions, responses) {
       ...dimKodes.map((k) => d.rataPerDimensi[k].rata),
       d.rataKeseluruhan,
       d.skorTertimbang,
+      d.skorNetral,
       kategoriLabel[d.kategori]
     ]);
   });
@@ -129,13 +130,15 @@ async function buildWorkbook(analytics, questions, responses) {
   if (dosenEndRow >= dosenStartRow) {
     const overallCol = String.fromCharCode('A'.charCodeAt(0) + 4 + dimKodes.length);
     const weightedCol = String.fromCharCode('A'.charCodeAt(0) + 5 + dimKodes.length);
+    const netralCol = String.fromCharCode('A'.charCodeAt(0) + 6 + dimKodes.length);
     addColorScale(wsDosen, `${overallCol}${dosenStartRow}:${overallCol}${dosenEndRow}`);
     addColorScale(wsDosen, `${weightedCol}${dosenStartRow}:${weightedCol}${dosenEndRow}`);
+    addColorScale(wsDosen, `${netralCol}${dosenStartRow}:${netralCol}${dosenEndRow}`);
   }
   wsDosen.columns = [
     { width: 32 }, { width: 20 }, { width: 16 }, { width: 16 },
     ...dimKodes.map(() => ({ width: 16 })),
-    { width: 18 }, { width: 18 }, { width: 18 }
+    { width: 18 }, { width: 18 }, { width: 18 }, { width: 18 }
   ];
   wsDosen.autoFilter = { from: 'A1', to: `${String.fromCharCode(64 + header.length)}1` };
 
