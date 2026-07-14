@@ -213,7 +213,7 @@
         <table id="tableDosen">
           <thead>
             <tr>
-              <th>Dosen</th><th>Prodi</th><th>Kelas</th><th>Jumlah Penilaian</th><th>Rata-rata</th><th>Skor Tertimbang</th><th>Kategori</th>
+              <th>Dosen</th><th>Prodi</th><th>Kelas</th><th>Jumlah Penilaian</th><th>Rata-rata</th><th>Skor Tertimbang</th><th>Skor Netral</th><th>Kategori</th>
             </tr>
           </thead>
           <tbody id="tableDosenBody"></tbody>
@@ -503,9 +503,11 @@ function filteredDosen() {
 function renderAll() {
   const dosenList = filteredDosen();
   const info = ANALYTICS.overview.skorTertimbangInfo;
+  const infoNetral = ANALYTICS.overview.skorNetralInfo;
   if (info) {
     document.getElementById('skorInfoText').innerHTML =
-      ` <span class="muted">(ambang normal ≈ ${info.m} responden, rata-rata institusi ${info.c.toFixed(2)})</span>`;
+      ` <span class="muted">Skor Tertimbang: ambang normal ≈ ${info.m} responden, rata-rata institusi ${info.c.toFixed(2)}. ` +
+      `Skor Netral (utama, dipakai untuk urutan): batas bawah keyakinan statistik dari sebaran nilai 1-5 (z=${infoNetral ? infoNetral.z : 1.65}), tidak hanya jumlah responden tapi juga konsistensi nilainya — dosen dengan sedikit penilaian akan lebih konservatif skornya sampai datanya lebih banyak.</span>`;
   }
   renderKPI(dosenList);
   renderChartDosen(dosenList);
@@ -545,7 +547,7 @@ function colorForScore(v) {
 
 function renderChartDosen(dosenList) {
   destroyChart('dosen');
-  const sorted = [...dosenList].sort((a,b) => b.skorTertimbang - a.skorTertimbang);
+  const sorted = [...dosenList].sort((a,b) => b.skorNetral - a.skorNetral);
   charts.dosen = new Chart(document.getElementById('chartDosen'), {
     type: 'bar',
     data: {
@@ -636,7 +638,7 @@ function renderChartKelas() {
 }
 
 function renderTable(dosenList) {
-  const sorted = [...dosenList].sort((a,b) => b.skorTertimbang - a.skorTertimbang);
+  const sorted = [...dosenList].sort((a,b) => b.skorNetral - a.skorNetral);
   document.getElementById('tableDosenBody').innerHTML = sorted.map(d => `
     <tr class="clickable" data-dosen="${encodeURIComponent(d.dosen)}">
       <td>${escapeHtml(d.dosen)}</td>
@@ -645,6 +647,7 @@ function renderTable(dosenList) {
       <td>${d.jumlahResponden}${d.dataTerbatas ? ' <span class="muted" title="Jumlah responden di bawah rata-rata institusi, skor ditarik mendekati rata-rata umum agar tidak bias">(data terbatas)</span>' : ''}</td>
       <td class="score">${d.rataKeseluruhan}</td>
       <td class="score">${d.skorTertimbang}</td>
+      <td class="score" title="Skor netral: batas bawah keyakinan statistik dari sebaran nilai, mempertimbangkan konsistensi bukan hanya jumlah responden">${d.skorNetral}</td>
       <td><span class="pill pill-${d.kategori}">${kategoriLabel[d.kategori]}</span></td>
     </tr>
   `).join('');
