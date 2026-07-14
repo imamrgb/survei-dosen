@@ -108,6 +108,12 @@ function buildAnalytics() {
       };
     });
     const rataKeseluruhan = +(rataPerItem.reduce((a, b) => a + b, 0) / rataPerItem.length).toFixed(2);
+    // Versi presisi penuh (dari total mentah, tanpa pembulatan per-item lebih dulu)
+    // dipakai untuk SORTING & perhitungan skor, supaya tidak banyak dosen "kembar"
+    // nilai gara-gara pembulatan 2 desimal. rataKeseluruhan (dibulatkan) tetap
+    // dipakai untuk apa yang ditampilkan ke layar.
+    const totalSemuaItem = s.totalPerItem.reduce((a, b) => a + b, 0);
+    const rataKeseluruhanRaw = totalSemuaItem / (s.jumlahResponden * s.totalPerItem.length);
 
     return {
       dosen: s.dosen,
@@ -117,11 +123,12 @@ function buildAnalytics() {
       rataPerItem,
       rataPerDimensi,
       rataKeseluruhan,
+      rataKeseluruhanRaw,
       distribusi: s.distribusi,
       kategori: bucketOf(rataKeseluruhan),
       saranList: s.saranList
     };
-  }).sort((a, b) => b.rataKeseluruhan - a.rataKeseluruhan);
+  }).sort((a, b) => b.rataKeseluruhanRaw - a.rataKeseluruhanRaw);
 
   // ---- Skor tertimbang (mengatasi bias sampel kecil) ----
   // Dosen dengan sedikit responden (mis. 1-2 orang) bisa punya rata-rata sempurna
@@ -133,10 +140,10 @@ function buildAnalytics() {
   //   m = jumlah responden "normal"/tipikal (median semua dosen)
   //   C = rata-rata seluruh dosen
   const totalDosenAwal = dosenResult.length;
-  const semuaRata = dosenResult.map((d) => d.rataKeseluruhan);
+  const semuaRata = dosenResult.map((d) => d.rataKeseluruhanRaw);
   const semuaN = dosenResult.map((d) => d.jumlahResponden).sort((a, b) => a - b);
   const C = totalDosenAwal
-    ? +(semuaRata.reduce((a, b) => a + b, 0) / totalDosenAwal).toFixed(4)
+    ? semuaRata.reduce((a, b) => a + b, 0) / totalDosenAwal
     : 0;
   const mid = Math.floor(semuaN.length / 2);
   const m = semuaN.length
@@ -146,17 +153,19 @@ function buildAnalytics() {
   const WILSON_Z = 1.65; // ~95% confidence satu sisi
   dosenResult.forEach((d) => {
     const v = d.jumlahResponden;
-    d.skorTertimbang = m
-      ? +(((v / (v + m)) * d.rataKeseluruhan) + ((m / (v + m)) * C)).toFixed(2)
-      : d.rataKeseluruhan;
+    d.skorTertimbangRaw = m
+      ? ((v / (v + m)) * d.rataKeseluruhanRaw) + ((m / (v + m)) * C)
+      : d.rataKeseluruhanRaw;
+    d.skorTertimbang = +d.skorTertimbangRaw.toFixed(2);
     d.dataTerbatas = v < m; // penanda: jumlah responden di bawah "normal"
 
     const counts = [1, 2, 3, 4, 5].map((val) => d.distribusi[val] || 0);
-    d.skorNetral = +wilsonStarScore(counts, WILSON_Z).toFixed(3);
+    d.skorNetralRaw = wilsonStarScore(counts, WILSON_Z);
+    d.skorNetral = +d.skorNetralRaw.toFixed(3);
   });
 
   // Ranking utama memakai skor netral (Wilson) — lihat catatan wilsonStarScore().
-  dosenResult.sort((a, b) => b.skorNetral - a.skorNetral);
+  dosenResult.sort((a, b) => b.skorNetralRaw - a.skorNetralRaw);
 
   // ---- Ringkasan tingkat institusi ----
   const totalPenilaian = dosenResult.reduce((a, d) => a + d.jumlahResponden, 0);
