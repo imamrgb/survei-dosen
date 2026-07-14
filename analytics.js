@@ -20,6 +20,36 @@ function getDimensionMap() {
   }));
 }
 
+/**
+ * Skor netral berbasis batas bawah interval kepercayaan (Wilson score untuk
+ * rating bintang, metode Evan Miller — "How Not To Sort By Average Rating").
+ * Berbeda dari skor tertimbang (yang hanya mempertimbangkan JUMLAH responden),
+ * metode ini mempertimbangkan seluruh SEBARAN nilai (1-5) yang diterima dosen,
+ * termasuk konsistensinya. Tidak ada parameter arbitrer (seperti "m") yang
+ * perlu dipilih manual — z adalah tingkat keyakinan statistik standar.
+ *   counts = [n1,n2,n3,n4,n5] -> jumlah jawaban per nilai 1..5
+ *   z = 1.65 setara ~95% confidence satu sisi (semakin besar z, semakin
+ *       konservatif/menuntut data lebih banyak sebelum skor tinggi dipercaya)
+ */
+function wilsonStarScore(counts, z = 1.65) {
+  const K = counts.length;
+  const N = counts.reduce((a, b) => a + b, 0);
+  if (N === 0) return 0;
+  let mean = 0;
+  for (let k = 0; k < K; k++) {
+    const s = k + 1;
+    mean += s * ((counts[k] + 1) / (N + K));
+  }
+  let variance = 0;
+  for (let k = 0; k < K; k++) {
+    const s = k + 1;
+    const p = (counts[k] + 1) / (N + K);
+    variance += p * Math.pow(s - mean, 2);
+  }
+  const se = Math.sqrt(variance / (N + K + 1));
+  return mean - z * se;
+}
+
 function bucketOf(rata) {
   if (rata >= 4.5) return 'sangatBaik';
   if (rata >= 3.5) return 'baik';
@@ -113,15 +143,20 @@ function buildAnalytics() {
     ? (semuaN.length % 2 ? semuaN[mid] : (semuaN[mid - 1] + semuaN[mid]) / 2)
     : 0;
 
+  const WILSON_Z = 1.65; // ~95% confidence satu sisi
   dosenResult.forEach((d) => {
     const v = d.jumlahResponden;
     d.skorTertimbang = m
       ? +(((v / (v + m)) * d.rataKeseluruhan) + ((m / (v + m)) * C)).toFixed(2)
       : d.rataKeseluruhan;
     d.dataTerbatas = v < m; // penanda: jumlah responden di bawah "normal"
+
+    const counts = [1, 2, 3, 4, 5].map((val) => d.distribusi[val] || 0);
+    d.skorNetral = +wilsonStarScore(counts, WILSON_Z).toFixed(3);
   });
 
-  dosenResult.sort((a, b) => b.skorTertimbang - a.skorTertimbang);
+  // Ranking utama memakai skor netral (Wilson) — lihat catatan wilsonStarScore().
+  dosenResult.sort((a, b) => b.skorNetral - a.skorNetral);
 
   // ---- Ringkasan tingkat institusi ----
   const totalPenilaian = dosenResult.reduce((a, d) => a + d.jumlahResponden, 0);
@@ -177,7 +212,8 @@ function buildAnalytics() {
       distribusiKepuasan,
       distribusiNilaiInstitusi,
       perKelas,
-      skorTertimbangInfo: { m, c: C }
+      skorTertimbangInfo: { m, c: C },
+      skorNetralInfo: { z: WILSON_Z }
     },
     dosen: dosenResult,
     dimensiInfo: dims.map((d) => ({ kode: d.kode, judul: d.judul }))
