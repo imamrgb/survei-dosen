@@ -166,8 +166,9 @@
         <div class="toolbar">
           <select id="filterProdi" class="filter-select"></select>
           <select id="filterRankMetric" class="filter-select">
-            <option value="skorNetral">Urutkan: Skor Netral (Wilson)</option>
             <option value="skorTertimbang">Urutkan: Skor Tertimbang (IMDB-style)</option>
+            <option value="skorNetral">Urutkan: Skor Netral (Wilson)</option>
+            <option value="ambangMinimum">Urutkan: Filter Ambang Minimum (≥10 responden)</option>
             <option value="rataKeseluruhan">Urutkan: Rata-rata Mentah</option>
           </select>
           <button class="btn btn-ghost" id="btnExportXlsx">⬇ Unduh Excel (.xlsx)</button>
@@ -294,20 +295,32 @@
 let TOKEN = '';
 let ANALYTICS = null;
 let CURRENT_FILTER_PRODI = '';
-let CURRENT_RANK_METRIC = 'skorNetral';
+let CURRENT_RANK_METRIC = 'skorTertimbang';
 const RANK_METRIC_LABEL = {
   skorNetral: 'Skor Netral (Wilson)',
   skorTertimbang: 'Skor Tertimbang (IMDB-style)',
-  rataKeseluruhan: 'Rata-rata Mentah'
+  rataKeseluruhan: 'Rata-rata Mentah',
+  ambangMinimum: 'Filter Ambang Minimum'
 };
 const RANK_METRIC_RAW_FIELD = {
   skorNetral: 'skorNetralRaw',
   skorTertimbang: 'skorTertimbangRaw',
   rataKeseluruhan: 'rataKeseluruhanRaw'
 };
+const AMBANG_MINIMUM_N = 10; // ubah di sini kalau mau ganti ambang minimumnya
 function sortByRankMetric(list) {
+  if (CURRENT_RANK_METRIC === 'ambangMinimum') {
+    // Tidak ada formula tarik-menarik sama sekali: dosen dengan responden
+    // di bawah ambang dipisah total dari ranking utama (bukan cuma ditandai),
+    // supaya tidak ada nilai yang "diubah" secara matematis.
+    const atas = list.filter((d) => d.jumlahResponden >= AMBANG_MINIMUM_N)
+      .sort((a, b) => b.rataKeseluruhanRaw - a.rataKeseluruhanRaw);
+    const bawah = list.filter((d) => d.jumlahResponden < AMBANG_MINIMUM_N)
+      .sort((a, b) => b.rataKeseluruhanRaw - a.rataKeseluruhanRaw);
+    return { atas, bawah };
+  }
   const rawField = RANK_METRIC_RAW_FIELD[CURRENT_RANK_METRIC] || CURRENT_RANK_METRIC;
-  return [...list].sort((a, b) => b[rawField] - a[rawField]);
+  return { atas: [...list].sort((a, b) => b[rawField] - a[rawField]), bawah: [] };
 }
 const charts = {};
 const NAVY = '#16294a', GOLD = '#b8912f', OK='#3a7d5c', WARN='#9a3030', MID='#9a7415', BLUE='#2f5583';
@@ -529,7 +542,8 @@ function renderAll() {
   const metricNote = {
     skorNetral: `Diurutkan berdasarkan <b>Skor Netral</b> — batas bawah keyakinan statistik dari sebaran nilai 1-5 (z=${infoNetral ? infoNetral.z : 1.65}), mempertimbangkan jumlah dan konsistensi nilai, bukan hanya jumlah responden.`,
     skorTertimbang: `Diurutkan berdasarkan <b>Skor Tertimbang</b> — dosen dengan sedikit responden ditarik mendekati rata-rata institusi (ambang normal ≈ ${info ? info.m : '-'} responden, rata-rata institusi ${info ? info.c.toFixed(2) : '-'}).`,
-    rataKeseluruhan: `Diurutkan berdasarkan <b>Rata-rata Mentah</b> — tanpa penyesuaian apapun, dosen dengan sedikit responden bisa unggul hanya karena kebetulan.`
+    rataKeseluruhan: `Diurutkan berdasarkan <b>Rata-rata Mentah</b> — tanpa penyesuaian apapun, dosen dengan sedikit responden bisa unggul hanya karena kebetulan.`,
+    ambangMinimum: `Diurutkan berdasarkan <b>Filter Ambang Minimum</b> — hanya dosen dengan &ge; ${AMBANG_MINIMUM_N} responden yang masuk ranking utama, diurutkan pakai rata-rata mentah (tanpa formula apapun). Dosen di bawah ${AMBANG_MINIMUM_N} responden dipisah ke bawah sebagai "data belum representatif", tidak ikut bersaing.`
   };
   document.getElementById('skorInfoText').innerHTML =
     ` <span class="muted">${metricNote[CURRENT_RANK_METRIC] || ''}</span>`;
@@ -571,7 +585,8 @@ function colorForScore(v) {
 
 function renderChartDosen(dosenList) {
   destroyChart('dosen');
-  const sorted = sortByRankMetric(dosenList);
+  const { atas, bawah } = sortByRankMetric(dosenList);
+  const sorted = [...atas, ...bawah];
   charts.dosen = new Chart(document.getElementById('chartDosen'), {
     type: 'bar',
     data: {
@@ -662,20 +677,29 @@ function renderChartKelas() {
 }
 
 function renderTable(dosenList) {
-  const sorted = sortByRankMetric(dosenList);
-  document.getElementById('tableDosenBody').innerHTML = sorted.map(d => `
+  const { atas, bawah } = sortByRankMetric(dosenList);
+  const rowHtml = (d) => `
     <tr class="clickable" data-dosen="${encodeURIComponent(d.dosen)}">
       <td>${escapeHtml(d.dosen)}</td>
       <td>${escapeHtml(d.prodi)}</td>
       <td>${escapeHtml(d.kelas)}</td>
       <td>${d.jumlahResponden}${d.dataTerbatas ? ' <span class="muted" title="Jumlah responden di bawah rata-rata institusi, skor ditarik mendekati rata-rata umum agar tidak bias">(data terbatas)</span>' : ''}</td>
-      <td class="score" ${CURRENT_RANK_METRIC==='rataKeseluruhan' ? 'style="font-weight:700"' : ''}>${d.rataKeseluruhan}</td>
+      <td class="score" ${CURRENT_RANK_METRIC==='rataKeseluruhan' || CURRENT_RANK_METRIC==='ambangMinimum' ? 'style="font-weight:700"' : ''}>${d.rataKeseluruhan}</td>
       <td class="score" ${CURRENT_RANK_METRIC==='skorTertimbang' ? 'style="font-weight:700"' : ''}>${d.skorTertimbang}</td>
       <td class="score" ${CURRENT_RANK_METRIC==='skorNetral' ? 'style="font-weight:700"' : ''} title="Skor netral: batas bawah keyakinan statistik dari sebaran nilai, mempertimbangkan konsistensi bukan hanya jumlah responden">${d.skorNetral}</td>
       <td><span class="pill pill-${d.kategori}">${kategoriLabel[d.kategori]}</span></td>
     </tr>
-  `).join('');
+  `;
+  const dividerHtml = bawah.length ? `
+    <tr>
+      <td colspan="8" style="background:#f4efe4; color:#9a7415; font-weight:700; text-align:center; padding:10px;">
+        &darr; Di bawah ambang minimum (${AMBANG_MINIMUM_N} responden) — data belum representatif, tidak ikut dirangking &darr;
+      </td>
+    </tr>` : '';
+  document.getElementById('tableDosenBody').innerHTML =
+    atas.map(rowHtml).join('') + dividerHtml + bawah.map(rowHtml).join('');
   document.querySelectorAll('#tableDosenBody tr').forEach(tr => {
+    if (!tr.hasAttribute('data-dosen')) return;
     tr.onclick = () => openDetail(decodeURIComponent(tr.getAttribute('data-dosen')));
   });
 }
